@@ -1,11 +1,39 @@
 {
   "mcpServers": {
-    "playwright": {
-      "command": "npx",
-      "args": ["@playwright/mcp@latest"],
+    "ixnetwork": {
+      "command": "/Users/ashwjosh/.local/bin/uv",
+      "args": [
+        "--directory",
+        "/Users/ashwjosh/ixnetwork-mcp",
+        "run",
+        "server.py"
+      ]
+    },
+    "ixia-inventory": {
+      "command": "/Users/ashwjosh/miniconda3/bin/mcp-proxy",
+      "args": [
+        "http://localhost:8888/mcp"
+      ],
       "env": {
-        "DISPLAY": ":1"
+        "MCP_PROXY_LOG_LEVEL": "debug"
       }
+    },
+    "ddg-search": {
+      "command": "/Users/ashwjosh/.local/bin/uvx",
+      "args": [
+        "duckduckgo-mcp-server"
+      ]
+    },
+    "n8n": {
+      "command": "/usr/local/bin/npx",
+      "args": [
+        "-y",
+        "supergateway",
+        "--sse",
+        "http://localhost:5678/mcp/b2944dc4-babb-4585-8f2d-19015695528e/sse",
+        "--header",
+        "Authorization: Bearer abc123"
+      ]
     }
   }
 }

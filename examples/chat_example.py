@@ -21,7 +21,7 @@ async def run_memory_chat():
     load_dotenv()
 
     # Config file path - change this to your config file
-    config_file = "examples/browser_mcp.json"
+    config_file = "browser_mcp.json"
 
     print("Initializing chat...")
 

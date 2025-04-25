@@ -17,7 +17,7 @@ from langchain_openai import ChatOpenAI
 from mcp_use import MCPAgent, MCPClient
 
 # App title and description - must be first Streamlit command
-st.set_page_config(page_title="MCP Chat", layout="wide")
+st.set_page_config(page_title="MCP Chat", layout="wide", initial_sidebar_state="collapsed")
 
 # Load environment variables for API keys
 load_dotenv()
@@ -220,7 +220,7 @@ def apply_fallback_bg():
 add_bg_from_local_file()
 
 st.title("Keysight L23 MCP Agent")
-st.markdown("Chat with Keysight L23 Infrastructure.")
+st.markdown("Chat with Keysight L23 Infrastructure Agent.")
 
 # Config file path
 config_file = "browser_mcp.json"
@@ -326,4 +326,5 @@ if user_input and st.session_state.initialized:
 
 # Handle cleanup on session end
 if st.session_state.client:
-    st.sidebar.button("End Session", on_click=lambda: run_async(cleanup())) 
+    with st.sidebar:
+        st.button("End Session", on_click=lambda: run_async(cleanup())) 

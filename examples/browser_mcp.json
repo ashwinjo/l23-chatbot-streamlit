@@ -6,7 +6,7 @@
         "--directory",
         "/Users/ashwjosh/ixnetwork-mcp",
         "run",
-        "server.py"
+        "main.py"
       ]
     },
     "ixia-inventory": {

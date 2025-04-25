@@ -14,10 +14,11 @@ import base64
 import os
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 from mcp_use import MCPAgent, MCPClient
 
 # App title and description - must be first Streamlit command
-st.set_page_config(page_title="MCP Chat", layout="wide")
+st.set_page_config(page_title="MCP Chat", layout="wide", initial_sidebar_state="collapsed")
 
 # Load environment variables for API keys
 load_dotenv()
@@ -220,7 +221,7 @@ def apply_fallback_bg():
 add_bg_from_local_file()
 
 st.title("Keysight L23 MCP Agent")
-st.markdown("Chat with Keysight L23 Infrastructure.")
+st.markdown("Chat with Keysight L23 Infrastructure Agent.")
 
 # Config file path
 config_file = "browser_mcp.json"
@@ -247,12 +248,22 @@ if "initialized" not in st.session_state:
         def init_agent():
             async def _init():
                 client = MCPClient.from_config_file(config_file)
+                # Create LLM
                 llm = ChatOpenAI(model="gpt-4o-mini")
+                
+                # System message for the assistant
+                system_message = """You are Dwight, a helpful assistant that specializes in data analysis and organization.
+                Always format your responses as markdown tables when presenting information.
+                For lists or multiple items, use tables with headers.
+                Even for simple responses, try to structure them in a tabular format where it makes sense.
+                Sign your messages as 'Dwight'."""
+                
                 agent = MCPAgent(
                     llm=llm,
                     client=client,
                     max_steps=15,
                     memory_enabled=True,
+                    system_prompt=system_message,
                 )
                 return client, agent
             
@@ -260,6 +271,12 @@ if "initialized" not in st.session_state:
         
         st.session_state.client, st.session_state.agent = init_agent()
         st.session_state.initialized = True
+        
+        # Add a welcome message if this is the first time
+        if len(st.session_state.messages) == 0:
+            welcome_message = "Hello, I am Dwight. How may I help you today?"
+            st.session_state.messages.append({"role": "assistant", "content": welcome_message})
+            
     except Exception as e:
         st.error(f"Failed to initialize agent: {e}")
 
@@ -288,6 +305,9 @@ async def get_agent_response(user_input):
     if user_input.lower() == "clear":
         st.session_state.agent.clear_conversation_history()
         st.session_state.messages = []
+        # Re-add the welcome message after clearing
+        welcome_message = "Hello, I am Dwight. How may I help you today?"
+        st.session_state.messages.append({"role": "assistant", "content": welcome_message})
         return "Conversation history cleared."
     
     try:
@@ -326,4 +346,5 @@ if user_input and st.session_state.initialized:
 
 # Handle cleanup on session end
 if st.session_state.client:
-    st.sidebar.button("End Session", on_click=lambda: run_async(cleanup())) 
+    with st.sidebar:
+        st.button("End Session", on_click=lambda: run_async(cleanup())) 

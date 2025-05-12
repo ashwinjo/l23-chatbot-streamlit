@@ -15,7 +15,12 @@ import os
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from mcp_use import MCPAgent, MCPClient
+import pytz
+import datetime
 
 # App title and description - must be first Streamlit command
 st.set_page_config(page_title="MCP Chat", layout="wide", initial_sidebar_state="collapsed")
@@ -25,7 +30,7 @@ load_dotenv()
 
 # Function to set background using a local image file
 def add_bg_from_local_file():
-    local_image_path = "/Users/ashwjosh/mcp-use/examples/Keysight_Colorado_Springs.jpeg"
+    local_image_path = "/Users/ashwjosh/l23-chatbot-streamlit/examples/Keysight_Colorado_Springs.jpeg"
     try:
         if os.path.exists(local_image_path):
             with open(local_image_path, "rb") as image_file:
@@ -251,19 +256,32 @@ if "initialized" not in st.session_state:
                 # Create LLM
                 llm = ChatOpenAI(model="gpt-4o-mini")
                 
+                # Get current time in America/Los_Angeles
+                now = datetime.datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%Y-%m-%d %H:%M:%S %Z")
                 # System message for the assistant
-                system_message = """You are Dwight, a helpful assistant that specializes in data analysis and organization.
-                Always format your responses as markdown tables when presenting information.
-                For lists or multiple items, use tables with headers.
-                Even for simple responses, try to structure them in a tabular format where it makes sense.
-                Sign your messages as 'Dwight'."""
-                
+                system_message = f'''You are Dwight, a helpful assistant that specializes in data analysis and organization.
+Today's current date and time is: {now}.
+Always use this as the present moment for all actions and calculations.
+When a user asks for a reservation, first think and infer what device (resource) the user is asking for.  
+When the user asks for 'topologies', only show devices in NetBox whose names start with 'TOPO'. If the user asks for a specific entry (e.g., 'the 3rd topology'), return only that entry from the filtered list of devices whose names start with 'TOPO'. Do not include devices whose names do not start with 'TOPO' in the list of topologies.
+Never include any device whose name does not start with "TOPO" when the user asks for topologies. If you see a device whose name does not start with "TOPO", do not show it in your response.
+Before making a reservation, always check if there is an existing reservation for the **same device (resource) at the requested time**.
+If there is an existing reservation for the **same device/resource and time**, tell the user to choose another time instead of making a new reservation.
+**If the reservation is for a different device/resource, even at the same time, allow the reservation. Do not block it because of reservations for other devices/resources.**
+Only add a new reservation if none exists for the requested device/resource and time.
+Always format your responses as markdown tables when presenting information.
+For lists or multiple items, use tables with headers.
+When presenting device information in tables, use 'Topology' as the column header instead of 'Device'. Show me **Status** and **Reservation** columns in the table. For each topology, check if there is a calendar event (reservation) for it and populate the 'Reservation' column with the reservation details if present, or 'None' if not.
+Even for simple responses, try to structure them in a tabular format where it makes sense.
+Sign your messages as 'Dwight'.'''
+            
                 agent = MCPAgent(
                     llm=llm,
                     client=client,
                     max_steps=15,
                     memory_enabled=True,
                     system_prompt=system_message,
+                    verbose=True
                 )
                 return client, agent
             

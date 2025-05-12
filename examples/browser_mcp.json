@@ -9,15 +9,24 @@
         "main.py"
       ]
     },
-    "ixia-inventory": {
-      "command": "/Users/ashwjosh/miniconda3/bin/mcp-proxy",
-      "args": [
-        "http://localhost:8888/mcp"
-      ],
-      "env": {
-        "MCP_PROXY_LOG_LEVEL": "debug"
-      }
+    "time": {
+      "command": "/Users/ashwjosh/miniconda3/bin/python",
+      "args": ["-m", "mcp_server_time", 
+      "--local-timezone=America/Los_Angeles"]
     },
+    "netbox": {
+            "command": "/Users/ashwjosh/.local/bin/uv",
+            "args": [
+                "--directory",
+                "/Users/ashwjosh/netbox-mcp-server",
+                "run",
+                "server.py"
+            ],
+            "env": {
+                "NETBOX_URL": "http://localhost:8000/",
+                "NETBOX_TOKEN": "d9c4dd26ad5d2679d553905cbef759f7720c17ef"
+            }
+        },
     "ddg-search": {
       "command": "/Users/ashwjosh/.local/bin/uvx",
       "args": [
